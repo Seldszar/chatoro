@@ -1,0 +1,12 @@
+{
+  "commit": false,
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "access": "restricted",
+  "changelog": [
+    "@changesets/changelog-github",
+    {
+      "repo": "seldszar/chatoro"
+    }
+  ]
+}

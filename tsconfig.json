@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+
+    "target": "es2022",
+    "moduleResolution": "bundler",
+    "module": "es2022",
+
+    "skipLibCheck": true,
+    "declaration": true,
+
+    "outDir": "dist"
+  }
+}
