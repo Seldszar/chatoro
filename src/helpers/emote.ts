@@ -99,7 +99,7 @@ export class Emotes extends Map<string, Emote> {
             });
           }
         },
-      }
+      },
     );
 
     if (this.timeoutId) {
@@ -113,7 +113,7 @@ export class Emotes extends Map<string, Emote> {
         if (response.ok) {
           return source.callback(await response.json());
         }
-      })
+      }),
     );
 
     this.timeoutId = window.setTimeout(() => this.refresh(), 600_000);

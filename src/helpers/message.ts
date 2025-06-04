@@ -6,101 +6,102 @@ export interface EmoteOffset {
 }
 
 export interface EmoteOccurence {
-  emote: Emote;
+  emoji?: Emote;
+  url?: string;
+  emote?: Emote;
 
   start: number;
   end: number;
 }
 
-export interface Message {
-  emoteOffsets: EmoteOffset[];
-  emotes: Emotes;
-  text: string;
-}
-
 export interface MessagePart {
   content: string;
+
+  emoji?: Emote;
+  url?: string;
   emote?: Emote;
 }
 
 function getEmojiCode(emoji: string) {
-  return Array.from(emoji, (value) => value.codePointAt(0)!.toString(16)).join("-");
+  return Array.from(emoji, (value) => value.codePointAt(0)?.toString(16)).join("-");
 }
 
-export function parseMessage(text: string, offsets: EmoteOffset[], emotes: Emotes) {
+export function parseMessage(text: string, emoteOffsets: EmoteOffset[], emotes: Emotes) {
   const occurrences = new Array<EmoteOccurence>();
   const parts = new Array<MessagePart>();
 
   let lastPosition = 0;
 
-  offsets.forEach((offset) => {
+  emoteOffsets.forEach((offset) => {
     offset.indices.forEach((indice) => {
-      const [start, end] = indice;
+      const start = indice[0];
+      const end = indice[1];
 
-      occurrences.push({
-        emote: {
-          url: `https://static-cdn.jtvnw.net/emoticons/v2/${offset.id}/default/dark/1.0`,
-          code: text.substring(start, end),
-        },
+      const emote = {
+        url: `https://static-cdn.jtvnw.net/emoticons/v2/${offset.id}/default/dark/1.0`,
+        code: text.substring(start, end),
+      };
 
-        start,
-        end,
-      });
+      occurrences.push({ emote, start, end });
     });
   });
 
   emotes.forEach((emote, name) => {
-    const matches = text.matchAll(new RegExp(`\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\b`, "g"));
+    const matches = text.matchAll(
+      new RegExp(`(?<!\\S)${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\S)`, "g"),
+    );
 
     for (const match of matches) {
-      occurrences.push({
-        emote,
+      const start = match.index;
+      const end = start + name.length;
 
-        start: match.index,
-        end: match.index + name.length,
-      });
+      occurrences.push({ emote, start, end });
     }
   });
 
-  const matches = text.matchAll(
-    /[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/gu
-  );
+  {
+    const matches = text.matchAll(/\b(?:https?:\/\/)?\S+\.[a-z]+\b/gi);
 
-  for (const match of matches) {
-    const emoji = match[0];
+    for (const match of matches) {
+      const [url] = match;
 
-    occurrences.push({
-      emote: {
-        url: `https://cdn.jsdelivr.net/gh/jdecked/twemoji/assets/svg/${getEmojiCode(emoji)}.svg`,
-        code: emoji,
-      },
+      const start = match.index;
+      const end = start + url.length;
 
-      start: match.index,
-      end: match.index + emoji.length,
-    });
+      occurrences.push({ url, start, end });
+    }
+  }
+
+  {
+    const matches = text.matchAll(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E0}-\u{1F1FF}]/gu);
+
+    for (const match of matches) {
+      const [code] = match;
+
+      const start = match.index;
+      const end = start + code.length;
+
+      const emoji = {
+        url: `https://cdn.jsdelivr.net/gh/jdecked/twemoji/assets/svg/${getEmojiCode(code)}.svg`,
+        code,
+      };
+
+      occurrences.push({ emoji, start, end });
+    }
   }
 
   occurrences.sort((a, b) => a.start - b.start);
 
   for (const occurence of occurrences) {
     if (occurence.start > lastPosition) {
-      parts.push({
-        content: text.substring(lastPosition, occurence.start),
-      });
+      parts.push({ content: text.substring(lastPosition, occurence.start) });
     }
 
-    lastPosition = occurence.end + 1;
-
-    parts.push({
-      content: text.substring(occurence.start, lastPosition),
-      emote: occurence.emote,
-    });
+    parts.push({ ...occurence, content: text.substring(occurence.start, (lastPosition = occurence.end)) });
   }
 
   if (lastPosition < text.length) {
-    parts.push({
-      content: text.substring(lastPosition),
-    });
+    parts.push({ content: text.substring(lastPosition) });
   }
 
   return parts;
