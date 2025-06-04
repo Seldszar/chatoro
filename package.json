@@ -1,6 +1,6 @@
 {
   "name": "@seldszar/chatoro",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "repository": {
     "url": "https://github.com/seldszar/chatoro.git",
