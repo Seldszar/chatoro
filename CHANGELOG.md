@@ -1,5 +1,11 @@
 # @seldszar/chatoro
 
+## 1.1.1
+
+### Patch Changes
+
+- [`4e4f82c`](https://github.com/Seldszar/chatoro/commit/4e4f82cfb45b12ed33afe4f9d26f8c657fbb44ae) Thanks [@Seldszar](https://github.com/Seldszar)! - Update registry access and include types to manifest
+
 ## 1.1.0
 
 ### Minor Changes
