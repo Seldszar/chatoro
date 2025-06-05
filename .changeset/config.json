@@ -2,7 +2,7 @@
   "commit": false,
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "access": "restricted",
+  "access": "public",
   "changelog": [
     "@changesets/changelog-github",
     {
